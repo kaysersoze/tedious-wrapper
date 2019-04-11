@@ -1,6 +1,6 @@
 {
   "name": "tedious-wrapper",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A simple wrapper for tedious (TDS driver)",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "author": "Miles Hingston <miles@bitshift.cc>",
   "contributors": [
     "Carlos Noguera <cnoguera@accessids.com> (https://carlosnoguera.me)"
-  ]
+  ],
   "license": "MIT",
   "dependencies": {
     "tedious": "^2.2.4",

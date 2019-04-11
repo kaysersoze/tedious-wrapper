@@ -1,11 +1,13 @@
 const tedious = require('tedious');
 const ConnectionPool = require('tedious-connection-pool');
+const EventEmitter = require('events');
 let logger = {};
 
-class TediousWrapper
+class TediousWrapper extends EventEmitter
 {
     constructor(config, _logger)
     {
+	    super();
         config.connection.options.useColumnNames = true;
         config.connection.options.rowCollectionOnDone = false;
         config.connection.options.rowCollectionOnRequestCompletion = false;
@@ -46,7 +48,7 @@ class TediousWrapper
         {
             callback = typeof callback === 'function' ? callback : () => {};
             let connection;
-            
+
             try
             {
                 connection = await this.connectionPool.acquire();
@@ -70,7 +72,7 @@ class TediousWrapper
         {
             callback = typeof callback === 'function' ? callback : () => {};
             let connection;
-            
+
             try
             {
                 connection = await this.connect();
@@ -118,7 +120,7 @@ class TediousWrapper
             options.transformers = options.transformers || [];
             callback = typeof callback === 'function' ? callback : () => {};
             let connection;
-            
+
             try
             {
                 connection = await this.connect();
@@ -132,6 +134,7 @@ class TediousWrapper
 
             const resultSets = []
             let metaDataCount = 0;
+            let columnMetadata = [];
             let transform;
             let resultSet;
 
@@ -147,12 +150,14 @@ class TediousWrapper
                 }
 
                 callback(null, resultSets);
+                this.emit('columnMetadata', columnMetadata);
                 return resolve(resultSets);
             });
 
             request.on('columnMetadata', (columns) =>
             {
                 transform = {};
+                columnMetadata = columns;
 
                 Object.keys(columns).forEach((column) =>
                 {
@@ -181,11 +186,11 @@ class TediousWrapper
                 metaDataCount++;
                 resultSet = [];
             });
-        
+
             request.on('row', (row) =>
             {
                 const processedRow = {};
-                
+
                 Object.keys(row).forEach((column) =>
                 {
                     processedRow[column] = transform[column] ? transform[column](row[column].value, row[column].metadata) : row[column].value;
@@ -193,9 +198,9 @@ class TediousWrapper
 
                 resultSet.push(processedRow);
             });
-        
+
             request.on('done', (rowCount, more, rows) => resultSets.push(resultSet));
-        
+
             request.on('doneInProc', (rowCount, more, rows) =>
             {
                 if(resultSets.length === metaDataCount-1)
