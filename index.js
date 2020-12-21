@@ -1,5 +1,6 @@
 const tedious = require('tedious');
-const ConnectionPool = require('tedious-connection-pool');
+const ConnectionPool = require('tedious-connection-pool2');
+ConnectionPool.overrideTedious(tedious);
 const EventEmitter = require('events');
 let logger = {};
 
@@ -47,22 +48,14 @@ class TediousWrapper extends EventEmitter
         return new Promise(async (resolve, reject) =>
         {
             callback = typeof callback === 'function' ? callback : () => {};
-            let connection;
 
-            try
-            {
-                connection = await this.connectionPool.acquire();
-            }
+            this.connectionPool.acquire(function (error, connection) {
+                if (error) {
+                    return reject(error);
+                }
 
-            catch(error)
-            {
-                logger.log('error', error.message);
-                callback(error);
-                return reject(error);
-            }
-
-            callback(null, connection);
-            return resolve(connection);
+                return resolve(connection);
+            });
         });
     }
 
@@ -193,7 +186,8 @@ class TediousWrapper extends EventEmitter
 
                 Object.keys(row).forEach((column) =>
                 {
-                    processedRow[column] = transform[column] ? transform[column](row[column].value, row[column].metadata) : row[column].value;
+                    processedRow[column] = transform[column] ?
+                        transform[column](row[column].value, row[column].metadata) : row[column].value;
                 });
 
                 resultSet.push(processedRow);

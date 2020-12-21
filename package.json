@@ -1,6 +1,6 @@
 {
   "name": "tedious-wrapper",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A simple wrapper for tedious (TDS driver)",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "tedious": "^2.2.4",
-    "tedious-connection-pool": "github:mhingston/tedious-connection-pool"
+    "tedious": "^9.2.1",
+    "tedious-connection-pool2": "git+https://github.com/kaysersoze/tedious-connection-pool2.git"
   }
 }
