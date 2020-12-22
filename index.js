@@ -34,7 +34,7 @@ class TediousWrapper extends EventEmitter
             logger.log = () => {};
         }
 
-        config.pool.log = logger;
+        config.pool.log = logger.log;
         this.connectionPool = new ConnectionPool(config.pool, config.connection);
     }
 
